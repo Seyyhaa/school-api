@@ -16,46 +16,7 @@ export const createStudent = async (req, res) => {
     }
 };
 
-// /**
-//  * @swagger
-//  * /students:
-//  *   get:
-//  *     summary: Get all students
-//  *     tags: [Students]
-//  *     parameters:
-//  *       - in: query
-//  *         name: page
-//  *         schema: { type: integer, default: 1 }
-//  *         description: Page number
-//  *       - in: query
-//  *         name: limit
-//  *         schema: { type: integer, default: 10 }
-//  *         description: Number of items per page
-//  *      
-//  *     responses:
-//  *       200:
-//  *         description: List of courses
-//  */
-// export const getAllStudents = async (req, res) => {
-//     const limit = parseInt(req.query.limit) || 10;
-//     const page = parseInt(req.query.page) || 1;
-//     const total = await db.Student.count();
-//     try {
-//         const students = await db.Student.findAll({ include: db.Course,
-//             limit: limit, offset: (page - 1) * limit
-//          });
-//          res.json({
-//             meta: {
-//                 total: total,
-//                 page: page,
-//                 totalPages: Math.ceil(total / limit),
-//             },
-//             data: students
-//         });
-//     } catch (err) {
-//         res.status(500).json({ error: err.message });
-//     }
-// };
+
 /**
  * @swagger
  * /students:

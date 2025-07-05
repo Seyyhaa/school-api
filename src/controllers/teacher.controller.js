@@ -38,24 +38,7 @@ export const createTeacher = async (req, res) => {
     }
 };
 
-// /**
-//  * @swagger
-//  * /teachers:
-//  *   get:
-//  *     summary: Get all teachers
-//  *     tags: [Teachers]
-//  *     responses:
-//  *       200:
-//  *         description: List of teachers
-//  */
-// export const getAllTeachers = async (req, res) => {
-//     try {
-//         const teachers = await db.Teacher.findAll({ include: db.Course });
-//         res.json(teachers);
-//     } catch (err) {
-//         res.status(500).json({ error: err.message });
-//     }
-// };
+
 
 /**
  * @swagger
