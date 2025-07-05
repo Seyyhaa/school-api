@@ -40,6 +40,53 @@ export const createCourse = async (req, res) => {
     }
 };
 
+// /**
+//  * @swagger
+//  * /courses:
+//  *   get:
+//  *     summary: Get all courses
+//  *     tags: [Courses]
+//  *     parameters:
+//  *       - in: query
+//  *         name: page
+//  *         schema: { type: integer, default: 1 }
+//  *         description: Page number
+//  *       - in: query
+//  *         name: limit
+//  *         schema: { type: integer, default: 10 }
+//  *         description: Number of items per page
+//  *     responses:
+//  *       200:
+//  *         description: List of courses
+//  */
+// export const getAllCourses = async (req, res) => {
+
+//     // take certain amount at a time
+//     const limit = parseInt(req.query.limit) || 10;
+//     // which page to take
+//     const page = parseInt(req.query.page) || 1;
+
+//     const total = await db.Course.count();
+
+//     try {
+//         const courses = await db.Course.findAll(
+//             {
+//                 // include: [db.Student, db.Teacher],
+//                 limit: limit, offset: (page - 1) * limit
+//             }
+//         );
+//         res.json({
+//             meta: {
+//                 totalItems: total,
+//                 page: page,
+//                 totalPages: Math.ceil(total / limit),
+//             },
+//             data: courses,
+//         });
+//     } catch (err) {
+//         res.status(500).json({ error: err.message });
+//     }
+// };
 /**
  * @swagger
  * /courses:
@@ -55,33 +102,46 @@ export const createCourse = async (req, res) => {
  *         name: limit
  *         schema: { type: integer, default: 10 }
  *         description: Number of items per page
+ *       - in: query
+ *         name: sort
+ *         schema: { type: string, enum: [asc, desc], default: asc }
+ *         description: Sort by creation time
+ *       - in: query
+ *         name: populate
+ *         schema: { type: string }
+ *         description: Comma-separated relations to include (e.g., teacher,students)
  *     responses:
  *       200:
  *         description: List of courses
  */
+
 export const getAllCourses = async (req, res) => {
-
-    // take certain amount at a time
     const limit = parseInt(req.query.limit) || 10;
-    // which page to take
     const page = parseInt(req.query.page) || 1;
+    const sort = req.query.sort === 'desc' ? 'DESC' : 'ASC';
+    const offset = (page - 1) * limit;
+    const populate = (req.query.populate || "").split(',').map(p => p.trim());
 
-    const total = await db.Course.count();
+    const include = [];
+    if (populate.includes('teacher')) include.push(db.Teacher);
+    if (populate.includes('students')) include.push(db.Student);
 
     try {
-        const courses = await db.Course.findAll(
-            {
-                // include: [db.Student, db.Teacher],
-                limit: limit, offset: (page - 1) * limit
-            }
-        );
+        const total = await db.Course.count();
+        const courses = await db.Course.findAll({
+            include,
+            limit,
+            offset,
+            order: [['createdAt', sort]]
+        });
+
         res.json({
             meta: {
                 totalItems: total,
-                page: page,
+                page,
                 totalPages: Math.ceil(total / limit),
             },
-            data: courses,
+            data: courses
         });
     } catch (err) {
         res.status(500).json({ error: err.message });

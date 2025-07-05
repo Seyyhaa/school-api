@@ -38,20 +38,79 @@ export const createTeacher = async (req, res) => {
     }
 };
 
+// /**
+//  * @swagger
+//  * /teachers:
+//  *   get:
+//  *     summary: Get all teachers
+//  *     tags: [Teachers]
+//  *     responses:
+//  *       200:
+//  *         description: List of teachers
+//  */
+// export const getAllTeachers = async (req, res) => {
+//     try {
+//         const teachers = await db.Teacher.findAll({ include: db.Course });
+//         res.json(teachers);
+//     } catch (err) {
+//         res.status(500).json({ error: err.message });
+//     }
+// };
+
 /**
  * @swagger
  * /teachers:
  *   get:
  *     summary: Get all teachers
  *     tags: [Teachers]
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema: { type: integer, default: 1 }
+ *         description: Page number
+ *       - in: query
+ *         name: limit
+ *         schema: { type: integer, default: 10 }
+ *         description: Number of items per page
+ *       - in: query
+ *         name: sort
+ *         schema: { type: string, enum: [asc, desc], default: asc }
+ *         description: Sort by creation time
+ *       - in: query
+ *         name: populate
+ *         schema: { type: string }
+ *         description: Populate related models (e.g., courses)
  *     responses:
  *       200:
  *         description: List of teachers
  */
 export const getAllTeachers = async (req, res) => {
+    const limit = parseInt(req.query.limit) || 10;
+    const page = parseInt(req.query.page) || 1;
+    const sort = req.query.sort === 'desc' ? 'DESC' : 'ASC';
+    const offset = (page - 1) * limit;
+    const populate = (req.query.populate || "").split(',').map(p => p.trim());
+
+    const include = [];
+    if (populate.includes('courses')) include.push(db.Course);
+
     try {
-        const teachers = await db.Teacher.findAll({ include: db.Course });
-        res.json(teachers);
+        const total = await db.Teacher.count();
+        const teachers = await db.Teacher.findAll({
+            include,
+            limit,
+            offset,
+            order: [['createdAt', sort]]
+        });
+
+        res.json({
+            meta: {
+                totalItems: total,
+                page,
+                totalPages: Math.ceil(total / limit),
+            },
+            data: teachers
+        });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
